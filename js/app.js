@@ -1,7 +1,6 @@
-// Setup Dynamic Global API Core Connection Endpoint
-const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '') 
-    ? 'http://127.0.0.1:5000' 
-    : 'https://brts-ai-fleet-backend.onrender.com'; // Waitress/Gunicorn Remote Container
+// Force all fetch requests securely to the cloud production instance API natively,
+// ensuring execution globally irrespective of local dev or Android file host environments.
+const API_BASE_URL = 'https://routex-rscc.onrender.com';
 
 // Global State
 let globalData = [];
@@ -17,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Init Navigation Navigation
     initNavigation();
-    
+
     // Bind Action Buttons
     document.getElementById('btn-gen-data').addEventListener('click', handleGenerateData);
     document.getElementById('csv-upload').addEventListener('change', handleCSVUpload);
@@ -37,7 +36,7 @@ function initNavigation() {
         item.addEventListener('click', (e) => {
             e.preventDefault();
             const targetView = item.getAttribute('data-view');
-            
+
             navItems.forEach(n => n.classList.remove('active'));
             item.classList.add('active');
 
@@ -66,24 +65,24 @@ async function handleGenerateData() {
         const btn = document.getElementById('btn-gen-data');
         btn.innerHTML = `<i data-lucide="loader" class="spin"></i> Loading Real Transit Logs...`;
         lucide.createIcons();
-        
+
         // Fetch real Ahmedabad historical data securely from the backend API
         const response = await fetch(`${API_BASE_URL}/generate-demo`);
         const data = await response.json();
-        
+
         if (!response.ok || data.status === 'error') throw new Error(data.message);
-        
+
         globalData = data.dataset;
-        
+
         document.getElementById('data-status-container').style.display = 'block';
         document.getElementById('data-count-label').innerText = globalData.length;
-        
+
         // Run AI Engine Backend remotely
         await processDataWithAI();
-        
+
         // Switch to Dashboard
         document.querySelector('[data-view="dashboard"]').click();
-        
+
         btn.innerHTML = `<i data-lucide="refresh-cw"></i> Load AI Demo Set`;
         lucide.createIcons();
     } catch (e) {
@@ -97,17 +96,17 @@ function handleCSVUpload(event) {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = async function(e) {
+    reader.onload = async function (e) {
         const text = e.target.result;
         // Simple parsing logic assuming basic comma delimiter without internal quotes
         const lines = text.split('\n');
         const newData = [];
-        
+
         // Skip header at index 0
         for (let i = 1; i < lines.length; i++) {
             const line = lines[i].trim();
             if (!line) continue;
-            
+
             const cols = line.split(',');
             // Mapping assumed format: route_id, bus_id, capacity, passengers, time_slot, trip_number, date
             if (cols.length >= 4) {
@@ -122,17 +121,17 @@ function handleCSVUpload(event) {
                 });
             }
         }
-        
+
         if (newData.length > 0) {
             globalData = newData;
-            
+
             // Show Status
             document.getElementById('data-status-container').style.display = 'block';
             document.getElementById('data-count-label').innerText = globalData.length;
-            
+
             // Execute remote full-stack AI platform
             await processDataWithAI();
-            
+
             // Return to Dashboard View
             document.querySelector('[data-view="dashboard"]').click();
         } else {
@@ -149,12 +148,12 @@ async function processDataWithAI() {
             body: JSON.stringify({ dataset: globalData }),
             headers: { 'Content-Type': 'application/json' }
         });
-        
+
         if (!response.ok) throw new Error("Python Backend Error");
-        
+
         const data = await response.json();
         if (data.status === "error") throw new Error(data.message);
-        
+
         // Parse responses mapped directly from the Flask Engine
         analyzedRoutesData = data.routesOut;
         aiSystemSysOut = data.aiSystemSysOut;
@@ -170,7 +169,7 @@ async function processDataWithAI() {
         if (fleetMapCore) {
             fleetMapCore.updateMarkers(analyzedRoutesData);
         }
-        
+
     } catch (e) {
         alert("Fatal Error: Could not connect to the BRTS Python server.\nEnsure port 5000 is active.");
         console.error("Backend Error:", e);
@@ -179,19 +178,19 @@ async function processDataWithAI() {
 
 function updateKPICards() {
     const container = document.getElementById('kpi-container');
-    
+
     const totalRoutes = analyzedRoutesData.length;
     let totalBuses = 50; // Mock total
     let totalUtil = 0;
     let overloaded = 0;
     let underused = 0;
-    
+
     analyzedRoutesData.forEach(r => {
         totalUtil += r.utilization;
         if (r.status === 'Overloaded') overloaded++;
         if (r.status === 'Underutilized') underused++;
     });
-    
+
     const avgUtil = Math.round(totalUtil / totalRoutes);
 
     container.innerHTML = `
@@ -219,11 +218,11 @@ function updateCharts() {
     const labels = analyzedRoutesData.map(r => r.route);
     const utilData = analyzedRoutesData.map(r => r.utilization);
     const effiData = analyzedRoutesData.map(r => r.efficiencyScore);
-    
+
     // 1. Bar Chart: Utilization
     const ctx1 = document.getElementById('utilizationChart').getContext('2d');
     if (charts.util) charts.util.destroy();
-    
+
     charts.util = new Chart(ctx1, {
         type: 'bar',
         data: {
@@ -248,7 +247,7 @@ function updateCharts() {
     // 2. Line Chart: Passenger Demand Trend (Mock single route R5 peak analysis)
     const trendCtx = document.getElementById('demandTrendChart').getContext('2d');
     if (charts.trend) charts.trend.destroy();
-    
+
     charts.trend = new Chart(trendCtx, {
         type: 'line',
         data: {
@@ -268,11 +267,11 @@ function updateCharts() {
     // 3. Pie Chart: Fleet Status
     const pCtx = document.getElementById('fleetPieChart').getContext('2d');
     if (charts.pie) charts.pie.destroy();
-    
+
     let optimal = 0, over = 0, under = 0;
     analyzedRoutesData.forEach(r => {
-        if(r.status==='Optimal') optimal++;
-        else if(r.status==='Overloaded') over++;
+        if (r.status === 'Optimal') optimal++;
+        else if (r.status === 'Overloaded') over++;
         else under++;
     });
 
@@ -308,7 +307,7 @@ function updateAIPanel(reliability) {
     // Update Reliability
     document.getElementById('reliability-val').innerText = reliability;
     document.getElementById('reliability-bar').style.width = `${reliability}%`;
-    
+
     if (reliability > 80) document.getElementById('reliability-val').style.color = 'var(--status-green)';
     else if (reliability > 60) document.getElementById('reliability-val').style.color = 'var(--status-yellow)';
     else document.getElementById('reliability-val').style.color = 'var(--status-red)';
@@ -317,7 +316,7 @@ function updateAIPanel(reliability) {
 function updateRouteTable() {
     const tbody = document.querySelector('#route-table tbody');
     tbody.innerHTML = '';
-    
+
     analyzedRoutesData.forEach(route => {
         let badgeClass = route.status === 'Optimal' ? 'badge-green' : (route.status === 'Overloaded' ? 'badge-red' : 'badge-yellow');
         let action = route.status === 'Optimal' ? 'Monitor' : (route.status === 'Overloaded' ? 'Add Capacity' : 'Reduce Fleet');
@@ -329,19 +328,19 @@ function updateRouteTable() {
                 <td><span class="badge ${badgeClass}">${route.utilization}% (${route.status})</span></td>
                 <td>${route.efficiencyScore}/100</td>
                 <td>${reliabStatus} (${route.reliabilityScore})</td>
-                <td style="color: ${action==='Add Capacity' ? 'var(--status-red)' : (action==='Reduce Fleet' ? 'var(--status-yellow)' : 'var(--text-secondary)')}">
+                <td style="color: ${action === 'Add Capacity' ? 'var(--status-red)' : (action === 'Reduce Fleet' ? 'var(--status-yellow)' : 'var(--text-secondary)')}">
                     ${action}
                 </td>
             </tr>
         `;
     });
-    
+
     // Bind interaction logic
     document.querySelectorAll('.route-table-row').forEach(row => {
         row.addEventListener('click', (e) => {
             const routeId = e.currentTarget.getAttribute('data-route');
             showRouteDrillDown(routeId);
-            
+
             document.querySelectorAll('.route-table-row').forEach(r => r.style.background = '');
             e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
         });
@@ -349,17 +348,17 @@ function updateRouteTable() {
 }
 
 function showRouteDrillDown(routeId) {
-    if(!charts.trend) return;
-    
+    if (!charts.trend) return;
+
     // Group records by bucket hour (6AM..8PM)
-    const demandByHour = { '6':0, '8':0, '10':0, '12':0, '14':0, '16':0, '18':0, '20':0 };
-    let countByHour = { '6':0, '8':0, '10':0, '12':0, '14':0, '16':0, '18':0, '20':0 };
-    
+    const demandByHour = { '6': 0, '8': 0, '10': 0, '12': 0, '14': 0, '16': 0, '18': 0, '20': 0 };
+    let countByHour = { '6': 0, '8': 0, '10': 0, '12': 0, '14': 0, '16': 0, '18': 0, '20': 0 };
+
     globalData.forEach(row => {
         if (row.route_id === routeId) {
             const hourStr = row.time_slot.split(':')[0];
             const hour = parseInt(hourStr);
-            
+
             let bucket = 6;
             if (hour >= 20) bucket = 20;
             else if (hour >= 18) bucket = 18;
@@ -368,22 +367,22 @@ function showRouteDrillDown(routeId) {
             else if (hour >= 12) bucket = 12;
             else if (hour >= 10) bucket = 10;
             else if (hour >= 8) bucket = 8;
-            
+
             demandByHour[bucket.toString()] += row.passengers;
             countByHour[bucket.toString()]++;
         }
     });
-    
+
     // Get realistic Averages representing historic demand
     const dataPoints = Object.keys(demandByHour).map(key => {
-        if (countByHour[key]===0) return 0;
+        if (countByHour[key] === 0) return 0;
         return Math.floor(demandByHour[key] / countByHour[key]);
     });
-    
+
     charts.trend.data.datasets[0].label = `[Live Drill-Down] Route ${routeId} Demand`;
     charts.trend.data.datasets[0].data = dataPoints;
     charts.trend.update();
-    
+
     // Bring user to dashboard to see drilldown
     document.querySelector('[data-view="dashboard"]').click();
 }
@@ -392,7 +391,7 @@ function updateAIAlerts() {
     const list = document.getElementById('predictive-alerts-list');
     if (!list) return;
     list.innerHTML = '';
-    
+
     aiSystemSysOut.alerts.forEach(alert => {
         list.innerHTML += `
             <div class="panel-card mb-4" style="background: rgba(239, 68, 68, 0.05); border-left: 4px solid var(--status-red)">
@@ -415,7 +414,7 @@ function handleRunSimulation() {
 
     const resDiv = document.getElementById('sim-results');
     const rdList = document.getElementById('redistribution-list');
-    
+
     rdList.innerHTML = '';
     aiSystemSysOut.redistributionPlan.forEach(plan => {
         rdList.innerHTML += `
@@ -436,7 +435,7 @@ function handleRunSimulation() {
 
     document.getElementById('sim-fuel-savings').innerText = `₹${aiSystemSysOut.expectedImpact.fuelSavings.toLocaleString()}`;
     document.querySelector('.impact-val.green').innerText = `+${aiSystemSysOut.expectedImpact.efficiencyGain}%`;
-    
+
     resDiv.style.display = 'block';
     resDiv.style.animation = 'fadeIn 0.5s ease forwards';
     lucide.createIcons();
@@ -444,7 +443,7 @@ function handleRunSimulation() {
 
 function handleExportPDF() {
     const element = document.getElementById('sim-results');
-    
+
     // Quick style adjustments to ensure sharp PDF rendering
     const originalBackground = element.style.background;
     const originalColor = element.style.color;
@@ -454,11 +453,11 @@ function handleExportPDF() {
     element.style.borderRadius = '12px';
 
     const opt = {
-        margin:       0.5,
-        filename:     `BRTS_AI_Simulation_Directive_${new Date().toISOString().split('T')[0]}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, backgroundColor: '#0B0F19' }, // deep dark base
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        margin: 0.5,
+        filename: `BRTS_AI_Simulation_Directive_${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, backgroundColor: '#0B0F19' }, // deep dark base
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
 
     html2pdf().set(opt).from(element).save().then(() => {
@@ -474,7 +473,7 @@ function handleExportPDF() {
 async function sendRealtimeEmail(toRoute, numBuses, fromRoute, btnElement) {
     btnElement.innerHTML = `<i data-lucide="loader" class="spin"></i> Sending...`;
     lucide.createIcons();
-    
+
     const emailData = {
         to_email: 'patelprince9265@gmail.com',
         subject: `URGENT: Fleet Redistribution Directive - Route ${toRoute}`,
@@ -487,7 +486,7 @@ async function sendRealtimeEmail(toRoute, numBuses, fromRoute, btnElement) {
             body: JSON.stringify(emailData),
             headers: { 'Content-Type': 'application/json' }
         });
-        
+
         const result = await response.json();
 
         if (response.ok) {
@@ -496,12 +495,12 @@ async function sendRealtimeEmail(toRoute, numBuses, fromRoute, btnElement) {
             btnElement.style.color = 'var(--status-green)';
             btnElement.style.pointerEvents = 'none';
             lucide.createIcons();
-            
+
             alert(`[API SUCCESS] Realtime Fleet Directive successfully executed!\nServer Response: ${result.message}\nSender: applegaming440@gmail.com\nRecipient: patelprince9265@gmail.com\nStatus: Sent securely via Google SMTP!`);
         } else {
             throw new Error(result.message || 'SMTP Backend Failure');
         }
-        
+
     } catch (e) {
         alert("Failed to deliver real-time email! Error: " + e.message);
         btnElement.innerHTML = `<i data-lucide="alert-triangle" style="width:14px; height:14px;"></i> Failed`;
