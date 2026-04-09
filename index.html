@@ -14,15 +14,13 @@
     <!-- Charts (Chart.js) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Leaflet Map -->
+    <!-- Maps & Custom Styles -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="styles.css?v=2026-mobile-fix">
 
     <!-- PDF Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-    <!-- Custom Styles -->
-    <link rel="stylesheet" href="styles.css">
 </head>
 <body class="dark-theme">
     <div class="layout">
@@ -244,9 +242,9 @@
         </main>
     </div>
 
-    <!-- Scripts -->
-    <script src="js/dataGenerator.js"></script>
-    <script src="js/geoMap.js"></script>
-    <script src="js/app.js"></script>
+    <!-- Scripts with Cache Busters -->
+    <script src="js/dataGenerator.js?v=2"></script>
+    <script src="js/geoMap.js?v=2"></script>
+    <script src="js/app.js?v=2"></script>
 </body>
 </html>
