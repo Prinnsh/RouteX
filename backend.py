@@ -11,9 +11,13 @@ from email.mime.multipart import MIMEMultipart
 # Safely load secure environment variables for cloud instances
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='.', static_url_path='')
 # Enable CORS for frontend interoperability
 CORS(app)
+
+@app.route('/')
+def serve_frontend():
+    return app.send_static_file('index.html')
 
 @app.route('/generate-demo', methods=['GET'])
 def generate_demo():
