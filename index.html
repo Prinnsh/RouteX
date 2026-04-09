@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRTS AI Fleet Intelligence Dashboard</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Charts (Chart.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+    <div class="layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i data-lucide="bus" class="brand-icon"></i>
+                <div class="brand-text">
+                    <h1>BRTS AI</h1>
+                    <span>Fleet Optimizer</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-view="dashboard">
+                    <i data-lucide="layout-dashboard"></i>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-item" data-view="routes">
+                    <i data-lucide="route"></i>
+                    Route Analysis
+                </a>
+                <a href="#" class="nav-item" data-view="ai-predictions">
+                    <i data-lucide="brain-circuit"></i>
+                    AI Predictions
+                </a>
+                <a href="#" class="nav-item" data-view="simulation">
+                    <i data-lucide="play-circle"></i>
+                    Simulation Simulator
+                </a>
+                <a href="#" class="nav-item" data-view="map">
+                    <i data-lucide="map-pinned"></i>
+                    Live Tracking
+                </a>
+                <a href="#" class="nav-item" data-view="data-handling">
+                    <i data-lucide="database"></i>
+                    Data Upload
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-title">
+                    <h2>Smart City Control Room</h2>
+                    <span class="system-status"><span class="status-dot green"></span> System Target: Optimal</span>
+                </div>
+                <div class="user-profile">
+                    <i data-lucide="bell" class="alert-icon"></i>
+                    <div class="avatar">
+                        <span>TA</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="view-section active">
+                
+                <!-- KPI Cards -->
+                <div class="kpi-grid" id="kpi-container">
+                    <!-- Cards will be injected by app.js -->
+                </div>
+                
+                <div class="dashboard-grid">
+                    <!-- Main Area Charts -->
+                    <div class="charts-area">
+                        <div class="chart-card">
+                            <h3>Route Utilization & Efficiency</h3>
+                            <div class="chart-wrapper-large">
+                                <canvas id="utilizationChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="charts-row section-gap">
+                            <div class="chart-card half">
+                                <h3>Passenger Demand Trend</h3>
+                                <div class="chart-wrapper-small">
+                                    <canvas id="demandTrendChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card half">
+                                <h3>Fleet Distribution</h3>
+                                <div class="chart-wrapper-small">
+                                    <canvas id="fleetPieChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Area (AI Recommendations) -->
+                    <div class="side-panel">
+                        <div class="ai-recommendations panel-card">
+                            <div class="card-header">
+                                <i data-lucide="sparkles" class="ai-icon"></i>
+                                <h3>AI Decisions Panel</h3>
+                            </div>
+                            <div class="reco-list" id="ai-reco-list">
+                                <!-- Recomms injected by app.js -->
+                            </div>
+                            <div class="reliability-score mt-4">
+                                <h4>Transport Reliability Index</h4>
+                                <div class="score-display">
+                                    <span class="score-val" id="reliability-val">--</span>
+                                    <span class="score-max">/ 100</span>
+                                </div>
+                                <div class="progress-bar-bg"><div class="progress-bar-fill" id="reliability-bar" style="width: 0%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Views (simplified for prototype, but would be expanded) -->
+            <div id="view-routes" class="view-section">
+                <div class="panel-card full-width">
+                    <h3>Comprehensive Route Analysis</h3>
+                    <div class="table-container">
+                        <table class="route-table" id="route-table">
+                            <thead>
+                                <tr>
+                                    <th>Route</th>
+                                    <th>Avg Utilization</th>
+                                    <th>Efficiency Score</th>
+                                    <th>Reliability</th>
+                                    <th>AI Decision</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows injected by app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="view-simulation" class="view-section">
+                <div class="panel-card simulation-panel text-center">
+                    <i data-lucide="lightbulb" class="sim-icon"></i>
+                    <h2>AI Fleet Optimization Simulator</h2>
+                    <p class="mb-4 text-muted">Run the AI engine to evaluate demand, redistribute resources and predict efficiency gains.</p>
+                    <button class="btn btn-primary btn-large" id="btn-run-sim">
+                        <i data-lucide="zap"></i> Run Smart Optimization Demo
+                    </button>
+                    
+                    <div class="sim-results" id="sim-results" style="display: none;">
+                        <h3 class="mt-4">Simulated Redistribution Plan</h3>
+                        <div class="redistribution-list text-left" id="redistribution-list">
+                            <!-- Redistribution items -->
+                        </div>
+                        <div class="sim-impact text-left mt-4 section-gap">
+                            <h4>Expected Impact:</h4>
+                            <div class="impact-metrics-row">
+                                <div class="impact-card">
+                                    <span class="impact-val green">+22%</span>
+                                    <span class="impact-label">Efficiency Increase</span>
+                                </div>
+                                <div class="impact-card">
+                                    <span class="impact-val green" id="sim-fuel-savings">₹0</span>
+                                    <span class="impact-label">Daily Fuel Savings</span>
+                                </div>
+                            </div>
+                            <div class="mt-4" style="text-align: right;">
+                                <button class="btn btn-outline" id="btn-export-pdf">
+                                    <i data-lucide="download"></i> Download Official Directive (PDF)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-data-handling" class="view-section">
+                <div class="panel-card upload-panel text-center">
+                    <i data-lucide="database" class="upload-icon mb-2"></i>
+                    <h3>Historical AI Model Training</h3>
+                    <p class="text-muted" style="margin-top: 8px;">Upload historical CSV logs to train the predictive models & optimize fleets. <br><strong style="opacity:0.7; font-size: 0.85rem;">Note: Live tracking utilizes real-time IoT feeds (simulated), not static CSVs.</strong></p>
+                    <div class="upload-actions mt-4 flex-center gap-4">
+                        <button class="btn btn-outline" onclick="document.getElementById('csv-upload').click()">
+                            <i data-lucide="upload-cloud"></i> Upload Training CSV
+                        </button>
+                        <input type="file" id="csv-upload" accept=".csv" style="display: none;">
+                        <span class="text-muted">OR</span>
+                        <button class="btn btn-secondary" id="btn-gen-data">
+                            <i data-lucide="refresh-cw"></i> Load AI Demo Set
+                        </button>
+                    </div>
+                    <div class="mt-4 text-left p-4 bg-dark-super rounded" id="data-status-container" style="display:none">
+                        <span class="green"><i data-lucide="check-circle"></i> Data loaded successfully. </span>
+                        <span id="data-count-label">0</span> records active.
+                    </div>
+                </div>
+            </div>
+            
+            <div id="view-ai-predictions" class="view-section">
+                <div class="panel-card full-width">
+                     <h3>AI Demand Predictions</h3>
+                     <div class="predictive-alerts" id="predictive-alerts-list">
+                         <!-- Alerts injected by app.js -->
+                     </div>
+                </div>
+            </div>
+            
+            <div id="view-map" class="view-section" style="height: calc(100vh - 120px);">
+                <div class="panel-card full-width" style="height: 100%; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                     <div style="padding: 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; z-index: 10; background: var(--bg-surface);">
+                         <h3>Digital Twin: Live Fleet Tracking Map</h3>
+                         <div class="flex-center gap-4">
+                             <span class="badge badge-green">Optimal</span>
+                             <span class="badge badge-yellow">Underutilized</span>
+                             <span class="badge badge-red pulse">Overloaded</span>
+                         </div>
+                     </div>
+                     <div id="fleetMap" style="flex: 1; width: 100%; display: block;"></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/dataGenerator.js"></script>
+    <script src="js/geoMap.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
