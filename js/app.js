@@ -104,8 +104,6 @@ function initNavigation() {
             }
         }, 4000);
     });
-}
-
 async function handleGenerateData() {
     try {
         const btn = document.getElementById('btn-gen-data');
