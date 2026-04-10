@@ -56,7 +56,9 @@ function initNavigation() {
                     }
                 }
             });
+        });
     });
+}
 
     // Real-Time IoT Telemetry Simulation
     let liveSimulationInterval = null;
