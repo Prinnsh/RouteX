@@ -56,7 +56,51 @@ function initNavigation() {
                     }
                 }
             });
-        });
+    });
+
+    // Real-Time IoT Telemetry Simulation
+    let liveSimulationInterval = null;
+    let isLiveSimRunning = false;
+
+    document.getElementById('btn-live-sim').addEventListener('click', async () => {
+        const btn = document.getElementById('btn-live-sim');
+        
+        if (isLiveSimRunning) {
+            clearInterval(liveSimulationInterval);
+            isLiveSimRunning = false;
+            btn.innerHTML = `<i data-lucide="activity"></i> Initiate Live IoT Telemetry Stream`;
+            btn.style.background = 'linear-gradient(135deg, #10B981, #059669)';
+            btn.style.boxShadow = '0 0 15px rgba(16,185,129,0.3)';
+            lucide.createIcons();
+            return;
+        }
+
+        if (globalData.length === 0) {
+            await handleGenerateData();
+        }
+
+        isLiveSimRunning = true;
+        btn.innerHTML = `<i data-lucide="square"></i> Disconnect Live IoT Stream`;
+        btn.style.background = 'linear-gradient(135deg, #EF4444, #DC2626)';
+        btn.style.boxShadow = '0 0 15px rgba(239,68,68,0.5)';
+        lucide.createIcons();
+
+        // Switch to Map View automatically to see the action
+        document.querySelector('[data-view="map"]').click();
+
+        // Polling Engine: Mutate passenger load every 4 seconds to trigger AI recalculations
+        liveSimulationInterval = setInterval(async () => {
+            if (globalData.length > 0) {
+                // Random flux in transit passenger numbers
+                globalData.forEach(row => {
+                    const flux = Math.floor(Math.random() * 15) - 6; // Range: -6 to +8
+                    row.passengers = Math.max(0, Math.min(row.capacity + 30, row.passengers + flux)); // Allow extreme overcrowding for alerts
+                });
+                
+                // Process the newly mutated data through the Python Model instantly
+                await processDataWithAI();
+            }
+        }, 4000);
     });
 }
 
